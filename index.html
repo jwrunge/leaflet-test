@@ -4,6 +4,11 @@
     <title>Leaflet test</title>
     <meta charset='utf-8'>
 
+    <!-- Include fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300&family=Roboto+Slab:wght@200&display=swap" rel="stylesheet">
+
     <!-- Leaflet style include -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
 </head>
@@ -12,37 +17,47 @@
     <div id="main-view">
         <!-- The sidebar -->
         <section id="sidebar">
-            <h2>Set latitude / longitude</h2>
-
-            <!-- Latitude and longitude fillables -->
-            <div class="latitude">
-                <label for="lat">Lat: </label>
-                <input type="number" name="lat" step="0.1">
-                <select name="north-south">
-                    <option value="n">N</option>
-                    <option value="s">S</option>
-                </select>
+            <div class="sidebar-section">
+                <h2>Set latitude / longitude</h2>
+                <!-- Latitude and longitude fillables -->
+                <div class="latitude">
+                    <label for="lat">Lat: </label>
+                    <input type="number" name="lat" step="0.1">
+                    <select name="north-south">
+                        <option value="n">N</option>
+                        <option value="s">S</option>
+                    </select>
+                </div>
+                <div class="longitude">
+                    <label for="lon">Lon: </label>
+                    <input type="number" name="lon" step="0.05">
+                    <select name="east-west">
+                        <option value="e">E</option>
+                        <option value="w">W</option>
+                    </select>
+                </div>
+                <!-- Latitude and longitude presets -->
+                <div class="buttons">
+                    <button id="tremont-btn">Tremont, IL</button>
+                    <button id="galesburg-btn">Galesburg, IL</button>
+                    <button id="chicago-btn">Chicago, IL</button>
+                </div>
             </div>
-            <div class="longitude">
-                <label for="lon">Lon: </label>
-                <input type="number" name="lon" step="0.05">
-                <select name="east-west">
-                    <option value="e">E</option>
-                    <option value="w">W</option>
-                </select>
-            </div>
 
-            <!-- Latitude and longitude presets -->
-            <div class="buttons">
-                <button id="tremont-btn">Tremont, IL</button>
-                <button id="galesburg-btn">Galesburg, IL</button>
-                <button id="chicago-btn">Chicago, IL</button>
+            <div class="sidebar-section">
+                <h2>Switch map tileset</h2>
+                <!-- Have to put radio buttons inside form for default checked attr to work -->
+                <form>
+                    <input type="radio" name="tileset" id="mapbox" value="mapbox"><label for="mapbox">Mapbox</label><br>
+                    <input type="radio" name="tileset" id="stamen" value="stamen"><label for="stamen">Stamen</label><br>
+                    <!-- <input type="radio" name="tileset" id="thunderforest" value="thunderforest"><label for="thunderforest">Thunderforest</label><br> -->
+                </form>
             </div>
         </section>
 
         <!-- The main app view -->
         <section id="app-view">
-            <h1>Leaflet test</h1>
+            <h1>Leaflet test - Jacob Runge</h1>
             <div id="map"></div> <!-- The map div, filled by JS below -->
         </section>
     </div>
@@ -51,6 +66,20 @@
     <style>
         html, body {
             margin: 0; padding: 0;
+            font-family: 'Roboto Slab', serif;
+            font-size: 16px;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        h1 {
+            font-size: 2em;
+        }
+
+        h2 {
+            font-size: 1.5em;
         }
 
         #sidebar, #app-view {
@@ -63,6 +92,18 @@
         #sidebar {
             color: white;
             background-color: rgb(40, 163, 50);
+        }
+
+        .sidebar-section {
+            padding: 2em 0;
+        }
+
+        .sidebar-section + .sidebar-section {
+            border-top: 1px solid white;
+        }
+
+        .sidebar-section h2 {
+            margin-top: 0;
         }
 
         .latitude, .longitude, input, select, button, #map {
@@ -102,8 +143,9 @@
 
         #map {
             margin: 1em auto;
+            border: 1px solid black;
             width: 100%;
-            height: 85%;
+            height: 80%;
         }
 
         /* Mobile/minimal-width styling */
@@ -139,9 +181,15 @@
         let lonDegrees = document.querySelector("[name=lon")
         let latCardinal = document.querySelector("[name=north-south")
         let lonCardinal = document.querySelector("[name=east-west")
+
         let tremontBtn = document.getElementById("tremont-btn")
         let galesburgBtn = document.getElementById("galesburg-btn")
         let chicagoBtn = document.getElementById("chicago-btn")
+
+        let radioButtons = document.querySelectorAll("[name=tileset]")
+        let mapboxRadio = document.getElementById("mapbox")
+        let stamenRadio = document.getElementById("stamen")
+        // let thunderforestRadio = document.getElementById("")
 
         //Update field values function
         function updateFieldValues(latlon) {
@@ -154,18 +202,43 @@
         //Use updateFieldValues to set default to Tremont
         updateFieldValues(latlonTremont)
 
+        //Set default tileset to Mapbox
+        mapboxRadio.checked = true
+
         //Set up map - initialize with Tremont lat/lon
         let mainMap = L.map("map").setView(latlonTremont, defaultZoom)
 
-        //Get map tiles from Mapbox
-        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
-            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-            maxZoom: 18,
-            id: 'mapbox/streets-v11',
-            tileSize: 512,
-            zoomOffset: -1,
-            accessToken: 'pk.eyJ1IjoiandydW5nZSIsImEiOiJja3VvOGFraXEwZmZoMm5wZnhicnIyNnM1In0.H2NTwP-5gNZMYl5wCo5xSw'
-        }).addTo(mainMap);
+        //Mapbox map tiles
+        let tilesMapbox = {
+            url: 'https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}',
+            options: {
+                attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+                maxZoom: 18,
+                id: 'mapbox/streets-v11',
+                tileSize: 512,
+                zoomOffset: -1,
+                accessToken: 'pk.eyJ1IjoiandydW5nZSIsImEiOiJja3VvOGFraXEwZmZoMm5wZnhicnIyNnM1In0.H2NTwP-5gNZMYl5wCo5xSw'
+            }
+        }
+
+        //Stamen map tiles
+        let tilesStamen = {
+            url: 'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}.{ext}',
+            options: {
+                attribution: 'Map tiles by <a href="http://stamen.com">Stamen Design</a>, <a href="http://creativecommons.org/licenses/by/3.0">CC BY 3.0</a> &mdash; Map data &copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+                subdomains: 'abcd',
+                maxZoom: 18,
+                ext: 'png'
+            }
+        }
+
+        //Function to switch map tileset
+        function switchTileset(tileset) {
+            L.tileLayer(tileset.url, tileset.options).addTo(mainMap);
+        }
+
+        //Default tileset to Mapbox
+        switchTileset(tilesMapbox)
 
         //Functions to set latitude and longitude based on input values
         function changeLatLon() {
@@ -196,6 +269,14 @@
             mainMap.setView(latlonChicago, defaultZoom)
             updateFieldValues(latlonChicago)
         })
+
+        //Tileset switcher
+        for (let i = 0; i < radioButtons.length; i++) {
+            radioButtons[i].addEventListener('change', function() {
+                if(radioButtons[i].value == 'mapbox') switchTileset(tilesMapbox)
+                else if(radioButtons[i].value == 'stamen') switchTileset(tilesStamen)
+            });
+        }
 
     </script>
 </body>
