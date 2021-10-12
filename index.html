@@ -12,7 +12,32 @@
     <div id="main-view">
         <!-- The sidebar -->
         <section id="sidebar">
+            <h2>Set latitude / longitude</h2>
 
+            <!-- Latitude and longitude fillables -->
+            <div class="latitude">
+                <label for="lat">Lat: </label>
+                <input type="number" name="lat" step="0.1">
+                <select name="north-south">
+                    <option value="n">N</option>
+                    <option value="s">S</option>
+                </select>
+            </div>
+            <div class="longitude">
+                <label for="lon">Lon: </label>
+                <input type="number" name="lon" step="0.05">
+                <select name="east-west">
+                    <option value="e">E</option>
+                    <option value="w">W</option>
+                </select>
+            </div>
+
+            <!-- Latitude and longitude presets -->
+            <div class="buttons">
+                <button id="tremont-btn">Tremont, IL</button>
+                <button id="galesburg-btn">Galesburg, IL</button>
+                <button id="chicago-btn">Chicago, IL</button>
+            </div>
         </section>
 
         <!-- The main app view -->
@@ -36,18 +61,49 @@
         }
 
         #sidebar {
+            color: white;
             background-color: rgb(40, 163, 50);
         }
 
-        #app-view {
+        .latitude, .longitude, input, select, button, #map {
+            border-radius: 5px;
+        }
 
+        input, select {
+            border: none;
+        }
+
+        .buttons {
+            text-align: center;
+        }
+
+        button {
+            border: none;
+            background-color: rgb(30, 228, 30);
+        }
+
+        button:hover {
+            cursor: pointer;
+            background-color: white;
+        }
+
+        .latitude, .longitude {
+            padding: .5em;
+            border: 1px solid white;
+        }
+
+        .longitude {
+            margin: 1em auto;
+        }
+
+        #sidebar h2 {
+            color: white;
         }
 
         #map {
             margin: 1em auto;
             width: 100%;
             height: 85%;
-            background: blue;
         }
 
         /* Mobile/minimal-width styling */
@@ -65,7 +121,82 @@
         }
     </style>
 
-    <!-- Leaflet script includ -->
+    <!-- Leaflet script include -->
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+
+    <!-- Leaflet init and interactions -->
+    <script>
+        //Default zoom
+        let defaultZoom = 13
+
+        //Predefine latitude and longitude for certain locations -- negative numbers for W and S
+        let latlonTremont = [40.5275, -89.4926]
+        let latlonGalesburg = [40.9478, -90.3712]
+        let latlonChicago = [41.8781, -87.6298]
+
+        //Get references to interactive elements
+        let latDegrees = document.querySelector("[name=lat")
+        let lonDegrees = document.querySelector("[name=lon")
+        let latCardinal = document.querySelector("[name=north-south")
+        let lonCardinal = document.querySelector("[name=east-west")
+        let tremontBtn = document.getElementById("tremont-btn")
+        let galesburgBtn = document.getElementById("galesburg-btn")
+        let chicagoBtn = document.getElementById("chicago-btn")
+
+        //Update field values function
+        function updateFieldValues(latlon) {
+            latDegrees.value = Math.abs(latlon[0])
+            latCardinal.value = latlon[0] >= 0 ? "n" : "s"
+            lonDegrees.value = Math.abs(latlon[1])
+            lonCardinal.value = latlon[1] >= 0 ? "e" : "w"
+        }
+
+        //Use updateFieldValues to set default to Tremont
+        updateFieldValues(latlonTremont)
+
+        //Set up map - initialize with Tremont lat/lon
+        let mainMap = L.map("map").setView(latlonTremont, defaultZoom)
+
+        //Get map tiles from Mapbox
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/streets-v11',
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1IjoiandydW5nZSIsImEiOiJja3VvOGFraXEwZmZoMm5wZnhicnIyNnM1In0.H2NTwP-5gNZMYl5wCo5xSw'
+        }).addTo(mainMap);
+
+        //Functions to set latitude and longitude based on input values
+        function changeLatLon() {
+            //Change sign of the lat/lon value based on cardinal value
+            let latitude = latCardinal.value === 'n' ? latDegrees.value : latDegrees.value * -1
+            let longitude = lonCardinal.value === 'e' ? lonDegrees.value : lonDegrees.value * -1
+
+            //Set view and zoom
+            mainMap.setView([latitude, longitude])
+        }
+
+        //Latitude and Longitude setters
+        latDegrees.addEventListener("change", changeLatLon)
+        lonDegrees.addEventListener("change", changeLatLon)
+        latCardinal.addEventListener("change", changeLatLon)
+        lonCardinal.addEventListener("change", changeLatLon)
+
+        //Preset lat/lon setters -- set lat/lon, reset zoom, update lat/lon and cardinal fields
+        tremontBtn.addEventListener("click", ()=> {
+            mainMap.setView(latlonTremont, defaultZoom)
+            updateFieldValues(latlonTremont)
+        })
+        galesburgBtn.addEventListener("click", ()=> {
+            mainMap.setView(latlonGalesburg, defaultZoom)
+            updateFieldValues(latlonGalesburg)
+        })
+        chicagoBtn.addEventListener("click", ()=> {
+            mainMap.setView(latlonChicago, defaultZoom)
+            updateFieldValues(latlonChicago)
+        })
+
+    </script>
 </body>
 </html>
