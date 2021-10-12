@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Leaflet test</title>
+    <meta charset='utf-8'>
+
+    <!-- Leaflet style include -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A==" crossorigin=""/>
+</head>
+
+<body>
+    <div id="main-view">
+        <!-- The sidebar -->
+        <section id="sidebar">
+
+        </section>
+
+        <!-- The main app view -->
+        <section id="app-view">
+            <h1>Leaflet test</h1>
+            <div id="map"></div> <!-- The map div, filled by JS below -->
+        </section>
+    </div>
+
+    <!-- Quick in-markup styling -- usually I would do this in a seperate file with some preprocessing -->
+    <style>
+        html, body {
+            margin: 0; padding: 0;
+        }
+
+        #sidebar, #app-view {
+            padding: 1em 2em;
+            box-sizing: border-box;
+            overflow-x: none;
+            overflow-y: auto;
+        }
+
+        #sidebar {
+            background-color: rgb(40, 163, 50);
+        }
+
+        #app-view {
+
+        }
+
+        #map {
+            margin: 1em auto;
+            width: 100%;
+            height: 85%;
+            background: blue;
+        }
+
+        /* Mobile/minimal-width styling */
+        @media screen and (max-width: 800px) {
+
+        }
+
+        /* Desktop styling */
+        @media screen and (min-width: 801px){
+            #main-view {
+                display: grid;
+                grid-template-columns: 1fr 3fr;
+                height: 100vh;
+            }
+        }
+    </style>
+
+    <!-- Leaflet script includ -->
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js" integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA==" crossorigin=""></script>
+</body>
+</html>
