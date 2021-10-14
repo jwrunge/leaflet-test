@@ -3,6 +3,7 @@
 <head>
     <title>Leaflet test</title>
     <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
 
     <!-- Include fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,16 +22,16 @@
                 <h2>Set latitude / longitude</h2>
                 <!-- Latitude and longitude fillables -->
                 <div class="latitude">
-                    <label for="lat">Lat: </label>
-                    <input type="number" name="lat" step="0.1">
+                    <label for="lat">Lat: &nbsp;</label>
+                    <input type="number" name="lat" step="0.1"> &deg; &nbsp;
                     <select name="north-south">
                         <option value="n">N</option>
                         <option value="s">S</option>
                     </select>
                 </div>
                 <div class="longitude">
-                    <label for="lon">Lon: </label>
-                    <input type="number" name="lon" step="0.05">
+                    <label for="lon">Lon: &nbsp;</label>
+                    <input type="number" name="lon" step="0.05" > &deg; &nbsp;
                     <select name="east-west">
                         <option value="e">E</option>
                         <option value="w">W</option>
@@ -52,6 +53,11 @@
                     <input type="radio" name="tileset" id="stamen" value="stamen"><label for="stamen">Stamen</label><br>
                     <!-- <input type="radio" name="tileset" id="thunderforest" value="thunderforest"><label for="thunderforest">Thunderforest</label><br> -->
                 </form>
+            </div>
+
+            <div class="sidebar-section">
+                <h2>Set markers</h2>
+                <input id="showPP" type="checkbox"> <label for="showPP">Show Precision Planting locations</label>
             </div>
         </section>
 
@@ -106,31 +112,34 @@
             margin-top: 0;
         }
 
-        .latitude, .longitude, input, select, button, #map {
+        input, select, button, #map {
             border-radius: 5px;
         }
 
         input, select {
             border: none;
+            padding: .5em;
+            max-width: 6em;
+            background-color: rgba(255,255,255,.8);
         }
 
         .buttons {
-            text-align: center;
+            margin-top: 1em;
         }
 
         button {
             border: none;
             background-color: rgb(30, 228, 30);
+            padding: .5em;
+        }
+
+        button + button {
+            margin-left: .5em;
         }
 
         button:hover {
             cursor: pointer;
             background-color: white;
-        }
-
-        .latitude, .longitude {
-            padding: .5em;
-            border: 1px solid white;
         }
 
         .longitude {
@@ -150,14 +159,16 @@
 
         /* Mobile/minimal-width styling */
         @media screen and (max-width: 800px) {
-
+            #map {
+                height: 80vh;
+            }
         }
 
         /* Desktop styling */
         @media screen and (min-width: 801px){
             #main-view {
                 display: grid;
-                grid-template-columns: 1fr 3fr;
+                grid-template-columns: 2fr 5fr;
                 height: 100vh;
             }
         }
@@ -175,6 +186,8 @@
         let latlonTremont = [40.5275, -89.4926]
         let latlonGalesburg = [40.9478, -90.3712]
         let latlonChicago = [41.8781, -87.6298]
+        let latlonPrecisionPlanting = [40.478133, -89.4870849]
+        let latlonPrecisionPlantingOpsCenter = [40.605568, -89.481496]
 
         //Get references to interactive elements
         let latDegrees = document.querySelector("[name=lat")
@@ -189,7 +202,8 @@
         let radioButtons = document.querySelectorAll("[name=tileset]")
         let mapboxRadio = document.getElementById("mapbox")
         let stamenRadio = document.getElementById("stamen")
-        // let thunderforestRadio = document.getElementById("")
+
+        let precisionPlantingMarkerCheckbox = document.getElementById("showPP")
 
         //Update field values function
         function updateFieldValues(latlon) {
@@ -277,6 +291,33 @@
                 else if(radioButtons[i].value == 'stamen') switchTileset(tilesStamen)
             });
         }
+
+        //Markers
+        let marker1, marker2
+
+        function togglePrecisionPlanting() {
+            console.log(precisionPlantingMarkerCheckbox.checked)
+            if(!precisionPlantingMarkerCheckbox.checked) {
+                mainMap.removeLayer(marker1)
+                mainMap.removeLayer(marker2)
+
+                return
+            }
+
+            //Set the markers
+            marker1 = L.marker(latlonPrecisionPlanting).addTo(mainMap)
+            marker2 = L.marker(latlonPrecisionPlantingOpsCenter).addTo(mainMap)
+
+            //Set the notes
+            marker1.bindPopup("Here is Precision Planting!").openPopup();
+            marker2.bindPopup("Here is the Precision Planting Operations Center!")
+
+            //Center on Tremont and zoom out
+            mainMap.setView(latlonTremont)
+            if(mainMap.getZoom() > 11) mainMap.setZoom(11)
+        }
+
+        precisionPlantingMarkerCheckbox.addEventListener("change", togglePrecisionPlanting)
 
     </script>
 </body>
